@@ -1,6 +1,6 @@
 # QForce Tendon Implementation
 
-This directory contains the C++ implementation of the QForce tendon algorithm for real-time muscle control in MuJoCo simulations, along with a Python script for generating comparison videos.
+This repository contains code to convert pose data collected from motion capture (MoCap) to tendon control forces for anthropomorphic hand control like MyoHand (MyoSuite). The implementation has been reimplemented in C++ to achieve a 20x speed improvement compared to the Python version. While a JAX version was also attempted, the QP solver performed poorly due to precision issues. This repository has been successfully used to convert 1700 hours of MoCap pose data in just 24 hours on a 48-core CPU.
 
 ## Overview
 
