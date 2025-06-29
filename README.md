@@ -81,6 +81,11 @@ cmake ..
 make -j$(nproc)
 ```
 
+### 5. Get MyoHand model 
+```bash
+git clone https://github.com/MyoHub/myo_sim
+```
+
 ## Usage
 
 ### C++ QForce Tendon Processing
