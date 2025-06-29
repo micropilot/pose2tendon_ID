@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <cstring>
 #include <osqp.h>
 #include <hdf5.h>
 #include <hdf5_hl.h>
