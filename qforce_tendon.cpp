@@ -541,8 +541,10 @@ int main(int argc, const char** argv) {
     // Iterate through trajectory
     printf("Processing trajectory with %zu points...\n", trajectory_data.size());
     
-    // Collect all controls
+    // Collect all controls and per-step activation state (pre-mj_step,
+    // matching the convention used by get_ctrl at line 401).
     std::vector<std::vector<double>> all_ctrl;
+    std::vector<std::vector<double>> all_act;
     
     // Progress tracking
     size_t progress_interval = std::max(1UL, trajectory_data.size() / 100);  // Show progress every 1% or at least every point
@@ -565,7 +567,14 @@ int main(int argc, const char** argv) {
         
         // Store control
         all_ctrl.push_back(ctrl);
-        
+
+        // Capture activation state at time t (before mj_step). Row i in
+        // all_act / all_ctrl together describes the actuator state used
+        // to advance toward target_qpos[i+1].
+        std::vector<double> act_t(m->nu);
+        for (int j = 0; j < m->nu; j++) act_t[j] = d->act[j];
+        all_act.push_back(act_t);
+
         // Apply control to simulation
         for (int j = 0; j < m->nu; j++) {
             d->ctrl[j] = ctrl[j];
@@ -602,6 +611,25 @@ int main(int argc, const char** argv) {
         printf("Saved %zu control vectors to %s\n", all_ctrl.size(), output_filename.c_str());
     } else {
         printf("Failed to open %s for writing\n", output_filename.c_str());
+    }
+
+    // Save activations to sibling _act.bin (same header format).
+    std::string act_filename = std::string(output_path) + "/" + base_name + "_act.bin";
+    FILE* act_file = fopen(act_filename.c_str(), "wb");
+    if (act_file) {
+        size_t num_vectors = all_act.size();
+        size_t vector_size = m->nu;
+        fwrite(&num_vectors, sizeof(size_t), 1, act_file);
+        fwrite(&vector_size, sizeof(size_t), 1, act_file);
+
+        for (const auto& act : all_act) {
+            fwrite(act.data(), sizeof(double), act.size(), act_file);
+        }
+
+        fclose(act_file);
+        printf("Saved %zu activation vectors to %s\n", all_act.size(), act_filename.c_str());
+    } else {
+        printf("Failed to open %s for writing\n", act_filename.c_str());
     }
 
     // Cleanup
